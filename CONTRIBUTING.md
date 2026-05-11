@@ -15,9 +15,10 @@ Thank you for considering contributing to this project! 🙌
 
 - Bug fixes for services not starting on Apple Silicon
 - New ARM64-native image alternatives
-- Additional services (Kafka, Zeppelin, Presto, etc.)
+- Additional services (Kafka, Zeppelin interpreters, Presto, etc.)
 - Documentation improvements
 - Troubleshooting tips
+- New usage examples for Hive, HBase, Spark, Zeppelin
 
 ## Testing your changes
 
@@ -29,7 +30,10 @@ docker-compose up -d        # start fresh
 docker-compose ps           # all services should be Up
 ```
 
-Then open http://localhost:8888 and confirm Hue loads.
+Then verify:
+- Hive connects in DBeaver at `localhost:10000`
+- Zeppelin opens at `http://localhost:9091`
+- HDFS NameNode opens at `http://localhost:9870`
 
 ## Reporting issues
 
