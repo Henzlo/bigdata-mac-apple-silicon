@@ -6,19 +6,20 @@
   <img src="https://img.shields.io/badge/Hadoop-3.3.1-66CCFF?logo=apachehadoop&logoColor=white" />
   <img src="https://img.shields.io/badge/Hive-2.3.2-FDEE21?logo=apachehive&logoColor=black" />
   <img src="https://img.shields.io/badge/Spark-3.4-E25A1C?logo=apachespark&logoColor=white" />
+  <img src="https://img.shields.io/badge/DBeaver-Required-372923?logo=dbeaver&logoColor=white" />
   <img src="https://img.shields.io/badge/License-MIT-green" />
 </p>
 
 <p align="center">
   A <strong>Cloudera-like Big Data environment</strong> that runs natively on Mac Apple Silicon.<br/>
-  No VM. No other OS. Just Docker Desktop and one command.
+  No VM. No other OS. Just Docker Desktop + DBeaver and one command.
 </p>
 
 ---
 
 ## ✨ Why this project?
 
-Cloudera QuickStart VM is x86-only and **cannot run on Mac M1/M2/M3/M4**. This project gives you the same experience — Hadoop, Hive, HBase, Spark, and a Hue web UI — fully working on Apple Silicon via Docker.
+Cloudera QuickStart VM is x86-only and **cannot run on Mac M1/M2/M3/M4**. This project gives you the same experience — Hadoop, Hive, HBase, Spark — fully working on Apple Silicon via Docker + DBeaver.
 
 ---
 
@@ -26,59 +27,35 @@ Cloudera QuickStart VM is x86-only and **cannot run on Mac M1/M2/M3/M4**. This p
 
 | Service | Version | Role | Web UI |
 |---|---|---|---|
-| **Hue** | latest | ⭐ Browser UI (like Cloudera Manager) | [localhost:8888](http://localhost:8888) |
 | **Hadoop HDFS** | 3.3.1 | Distributed file system | [localhost:9870](http://localhost:9870) |
 | **YARN** | 3.3.1 | Resource & job manager | [localhost:8088](http://localhost:8088) |
-| **Hive** | 2.3.2 | SQL on Hadoop | [localhost:10002](http://localhost:10002) |
+| **Hive** | 2.3.2 | SQL on Hadoop | Via DBeaver |
 | **HBase** | latest | NoSQL wide-column store | [localhost:16010](http://localhost:16010) |
-| **Spark** | 3.4 | Fast in-memory processing | [localhost:8080](http://localhost:8080) |
-| **Zookeeper** | 3.8 | Coordination service | — |
-| **PostgreSQL** | 14 | Hive metastore + Hue backend | — |
-
----
-
-## 🏗️ Architecture
-
-```
-┌─────────────────────────────────────────────────────┐
-│                  Your Mac M4 Browser                │
-│              http://localhost:8888 (Hue)            │
-└──────────────────────┬──────────────────────────────┘
-                       │
-┌──────────────────────▼──────────────────────────────┐
-│                   Docker Network                    │
-│                                                     │
-│  ┌──────────┐  ┌──────────┐  ┌──────────────────┐  │
-│  │ NameNode │  │ DataNode │  │ ResourceManager  │  │
-│  │  (HDFS)  │  │  (HDFS)  │  │    (YARN)        │  │
-│  └──────────┘  └──────────┘  └──────────────────┘  │
-│                                                     │
-│  ┌──────────┐  ┌──────────┐  ┌──────────────────┐  │
-│  │   Hive   │  │  HBase   │  │  Spark Master    │  │
-│  │  Server  │  │          │  │  + Worker        │  │
-│  └──────────┘  └──────────┘  └──────────────────┘  │
-│                                                     │
-│  ┌──────────┐  ┌──────────┐                         │
-│  │Zookeeper │  │PostgreSQL│  (Hive metastore + Hue) │
-│  └──────────┘  └──────────┘                         │
-└─────────────────────────────────────────────────────┘
-```
+| **Spark** | latest | Fast in-memory processing | [localhost:8080](http://localhost:8080) |
+| **Zookeeper** | 3.9 | Coordination service | — |
+| **Cloudbeaver** | latest | Web based SQL UI | [localhost:8090](http://localhost:8090) |
+| **PostgreSQL** | 12 | Hive metastore backend | — |
 
 ---
 
 ## ⚡ Prerequisites
 
-- Mac with **Apple Silicon** (M1, M2, M3, or M4)
-- **16 GB RAM** recommended
-- **Docker Desktop** for Apple Silicon → [Download here](https://desktop.docker.com/mac/main/arm64/Docker.dmg)
-- ~**10 GB** free disk space (for Docker images)
+### 1. Docker Desktop (Required)
+Download Apple Silicon version: [Docker Desktop for Mac](https://desktop.docker.com/mac/main/arm64/Docker.dmg)
 
-### ⚙️ Docker Desktop Settings (important!)
-Open Docker Desktop → **Settings → Resources** and set:
+After installing → **Settings → Resources** set:
 - CPUs: **5**
 - Memory: **10 GB**
 - Swap: **2 GB**
 - Click **Apply & Restart**
+
+### 2. DBeaver Community (Required — your main SQL UI)
+```bash
+brew install --cask dbeaver-community
+```
+Or download from: https://dbeaver.io/download/
+
+> DBeaver is your main interface — like Cloudera's Hue but works natively on Mac M4!
 
 ---
 
@@ -86,41 +63,62 @@ Open Docker Desktop → **Settings → Resources** and set:
 
 ```bash
 # 1. Clone this repo
-git clone https://github.com/YOUR_USERNAME/bigdata-mac-apple-silicon.git
+git clone https://github.com/Henzlo/bigdata-mac-apple-silicon.git
 cd bigdata-mac-apple-silicon
 
-# 2. Start everything
+# 2. Start Docker Desktop
+open -a Docker
+
+# 3. Start the stack
 docker-compose up -d
 
-# 3. Check all services are running
+# 4. Check all services are running
 docker-compose ps
-
-# 4. Open Hue in your browser
-open http://localhost:8888
 ```
 
-> **First run:** Docker downloads all images (~3–4 GB). This takes 5–10 minutes.
-> After that, startup takes about 60 seconds.
-
-**Default Hue login:** `admin` / `admin`
+> **First run:** Takes 5–10 minutes to download images (~3–4 GB).
+> After that, startup takes about 60–90 seconds.
 
 ---
 
-## 🌐 Hue — Your Main Interface
+## 🖥️ DBeaver Setup (Do this once)
 
-Hue runs at **http://localhost:8888** and gives you:
+### Connect to Hive
 
-- 📁 **File Browser** — upload/download files to/from HDFS
-- 📝 **Hive Editor** — write SQL and run queries
-- 🗄️ **HBase Browser** — view and edit HBase tables
-- ⚙️ **Job Browser** — monitor MapReduce and YARN jobs
-- 🔥 **Spark Notebooks** — run PySpark interactively
+1. Open **DBeaver**
+2. Click **"New Database Connection"** (+ icon)
+3. Search **"Hive"** → Select **Apache Hive 2**
+4. Fill in:
+   - Host: `localhost`
+   - Port: `10000`
+   - Leave username/password blank
+5. Click **"Test Connection"** → DBeaver auto-downloads the driver
+6. Click **Finish** ✅
+
+### Connect to HBase (via Phoenix)
+
+1. Click **"New Database Connection"**
+2. Search **"Phoenix"** → Select **Apache Phoenix**
+3. Fill in:
+   - Host: `localhost`
+   - Port: `8765`
+4. Click **"Test Connection"** → Click **Finish** ✅
+
+### Connect to Spark SQL
+
+1. Click **"New Database Connection"**
+2. Search **"Hive"** → Select **Apache Hive 2**
+3. Fill in:
+   - Host: `localhost`
+   - Port: `10000`
+   - Database: `default`
+4. Click **Finish** ✅
 
 ---
 
 ## 💡 Usage Examples
 
-### Hive SQL (via Hue Editor or terminal)
+### Hive SQL
 
 ```sql
 -- Create a database
@@ -137,16 +135,14 @@ CREATE TABLE employees (
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ',';
 
+-- Insert data
+INSERT INTO employees VALUES (1, 'Alice', 'Engineering', 95000);
+INSERT INTO employees VALUES (2, 'Bob', 'Marketing', 75000);
+
 -- Query
 SELECT dept, AVG(salary) as avg_salary
 FROM employees
 GROUP BY dept;
-```
-
-Or via terminal:
-```bash
-docker exec -it hive-server bash
-/opt/hive/bin/beeline -u jdbc:hive2://localhost:10000
 ```
 
 ---
@@ -201,10 +197,28 @@ docker exec -it spark-master pyspark --master spark://spark-master:7077
 
 ```python
 # Word count example
-text = spark.read.text("hdfs://namenode:9000/mydata/file.txt")
+df = spark.read.text("hdfs://namenode:9000/mydata/file.txt")
 from pyspark.sql.functions import explode, split, col
-words = text.select(explode(split(col("value"), " ")).alias("word"))
+words = df.select(explode(split(col("value"), " ")).alias("word"))
 words.groupBy("word").count().orderBy("count", ascending=False).show()
+```
+
+---
+
+## 🔄 Daily Usage
+
+### Every time you start your Mac:
+```bash
+cd ~/bigdata-mac-apple-silicon
+open -a Docker          # Start Docker Desktop
+docker-compose up -d    # Start the stack
+```
+
+### Then open DBeaver and start working! ✅
+
+### When done for the day:
+```bash
+docker-compose down     # Stop stack (keeps all your data)
 ```
 
 ---
@@ -222,10 +236,9 @@ docker-compose down
 docker-compose down -v
 
 # Restart a single service
-docker-compose restart hue
+docker-compose restart hive-server
 
 # View logs
-docker-compose logs -f hue
 docker-compose logs -f hive-server
 docker-compose logs -f namenode
 ```
@@ -234,23 +247,17 @@ docker-compose logs -f namenode
 
 ## 🔧 Troubleshooting
 
-### Hue not loading at localhost:8888?
-Hue waits for Hive and HDFS to be ready. Wait 2–3 more minutes after `docker-compose up -d`, then refresh.
-
-### A service shows "Exit" in `docker-compose ps`?
+### Hive connection refused in DBeaver?
+HiveServer2 takes 3-5 minutes to fully start. Wait and retry.
 ```bash
-docker-compose logs <service-name>
-docker-compose restart <service-name>
+docker logs hive-server 2>&1 | tail -10
 ```
 
-### "No space left on device" error?
-Open Docker Desktop → Settings → Resources → increase **Disk image size**.
-
-### Architecture warning `linux/amd64` on M4?
+### Services not starting?
+```bash
+docker-compose logs -f namenode
+docker-compose logs -f hive-metastore
 ```
-WARNING: The requested image's platform (linux/amd64) does not match...
-```
-This is **normal and expected**. Docker uses Rosetta 2 to run amd64 images. They work fine — just slightly slower than native ARM64. Native ARM64 images are used wherever possible.
 
 ### Complete reset (if everything is broken)
 ```bash
@@ -259,24 +266,8 @@ docker system prune -f
 docker-compose up -d
 ```
 
----
-
-## 📁 Project Structure
-
-```
-bigdata-mac-apple-silicon/
-├── docker-compose.yml          # All services defined here
-├── hadoop.env                  # Hadoop/YARN/MapReduce config
-├── hue-config/
-│   └── hue.ini                 # Hue connections to Hive, HBase, HDFS
-├── .github/
-│   └── workflows/
-│       └── validate.yml        # GitHub Actions CI
-├── .gitignore
-├── LICENSE
-├── CONTRIBUTING.md
-└── README.md
-```
+### Architecture warning `linux/amd64` on M4?
+Normal and expected — Docker uses Rosetta 2 for amd64 images.
 
 ---
 
@@ -284,18 +275,17 @@ bigdata-mac-apple-silicon/
 
 | Port  | Service                     |
 |-------|-----------------------------|
-| 8888  | **Hue Web UI** ⭐            |
 | 9870  | HDFS NameNode UI            |
 | 8088  | YARN ResourceManager UI     |
 | 8080  | Spark Master UI             |
 | 8081  | Spark Worker UI             |
 | 16010 | HBase Master UI             |
-| 10002 | HiveServer2 UI              |
+| 10000 | Hive JDBC (DBeaver)         |
+| 8090  | Cloudbeaver Web UI          |
 | 8188  | MapReduce History Server    |
 | 9864  | HDFS DataNode UI            |
 | 8042  | YARN NodeManager UI         |
 | 9000  | HDFS RPC                    |
-| 10000 | Hive JDBC                   |
 | 9083  | Hive Metastore Thrift       |
 | 2181  | Zookeeper                   |
 | 7077  | Spark Master RPC            |
@@ -305,7 +295,7 @@ bigdata-mac-apple-silicon/
 
 ## 🤝 Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). PRs are welcome — especially ARM64-native image alternatives and new service additions.
+See [CONTRIBUTING.md](CONTRIBUTING.md). PRs welcome!
 
 ---
 
