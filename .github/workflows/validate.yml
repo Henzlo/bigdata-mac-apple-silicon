@@ -20,4 +20,5 @@ jobs:
         run: |
           test -f docker-compose.yml && echo "✅ docker-compose.yml found"
           test -f hadoop.env        && echo "✅ hadoop.env found"
-          test -f hue-config/hue.ini && echo "✅ hue-config/hue.ini found"
+          test -f README.md         && echo "✅ README.md found"
+          test -f LICENSE           && echo "✅ LICENSE found"

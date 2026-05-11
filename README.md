@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/Docker-Required-2496ED?logo=docker&logoColor=white" />
   <img src="https://img.shields.io/badge/Hadoop-3.3.1-66CCFF?logo=apachehadoop&logoColor=white" />
   <img src="https://img.shields.io/badge/Hive-2.3.2-FDEE21?logo=apachehive&logoColor=black" />
-  <img src="https://img.shields.io/badge/Spark-3.4-E25A1C?logo=apachespark&logoColor=white" />
+  <img src="https://img.shields.io/badge/Spark-latest-E25A1C?logo=apachespark&logoColor=white" />
   <img src="https://img.shields.io/badge/DBeaver-Required-372923?logo=dbeaver&logoColor=white" />
   <img src="https://img.shields.io/badge/License-MIT-green" />
 </p>
@@ -19,21 +19,22 @@
 
 ## ✨ Why this project?
 
-Cloudera QuickStart VM is x86-only and **cannot run on Mac M1/M2/M3/M4**. This project gives you the same experience — Hadoop, Hive, HBase, Spark — fully working on Apple Silicon via Docker + DBeaver.
+Cloudera QuickStart VM is x86-only and **cannot run on Mac M1/M2/M3/M4**. This project gives you the same experience — Hadoop, Hive, HBase, Spark, and Zeppelin notebooks — fully working on Apple Silicon via Docker + DBeaver.
 
 ---
 
 ## 📦 Stack
 
-| Service | Version | Role | Web UI |
+| Service | Version | Role | Access |
 |---|---|---|---|
 | **Hadoop HDFS** | 3.3.1 | Distributed file system | [localhost:9870](http://localhost:9870) |
 | **YARN** | 3.3.1 | Resource & job manager | [localhost:8088](http://localhost:8088) |
 | **Hive** | 2.3.2 | SQL on Hadoop | Via DBeaver |
 | **HBase** | latest | NoSQL wide-column store | [localhost:16010](http://localhost:16010) |
 | **Spark** | latest | Fast in-memory processing | [localhost:8080](http://localhost:8080) |
-| **Zookeeper** | 3.9 | Coordination service | — |
+| **Zeppelin** | 0.11.0 | Notebook UI (Hue alternative) | [localhost:9091](http://localhost:9091) |
 | **Cloudbeaver** | latest | Web based SQL UI | [localhost:8090](http://localhost:8090) |
+| **Zookeeper** | 3.9 | Coordination service | — |
 | **PostgreSQL** | 12 | Hive metastore backend | — |
 
 ---
@@ -54,8 +55,6 @@ After installing → **Settings → Resources** set:
 brew install --cask dbeaver-community
 ```
 Or download from: https://dbeaver.io/download/
-
-> DBeaver is your main interface — like Cloudera's Hue but works natively on Mac M4!
 
 ---
 
@@ -84,7 +83,6 @@ docker-compose ps
 ## 🖥️ DBeaver Setup (Do this once)
 
 ### Connect to Hive
-
 1. Open **DBeaver**
 2. Click **"New Database Connection"** (+ icon)
 3. Search **"Hive"** → Select **Apache Hive 2**
@@ -95,37 +93,51 @@ docker-compose ps
 5. Click **"Test Connection"** → DBeaver auto-downloads the driver
 6. Click **Finish** ✅
 
-### Connect to HBase (via Phoenix)
-
+### Connect to HBase
 1. Click **"New Database Connection"**
 2. Search **"Phoenix"** → Select **Apache Phoenix**
 3. Fill in:
    - Host: `localhost`
    - Port: `8765`
-4. Click **"Test Connection"** → Click **Finish** ✅
-
-### Connect to Spark SQL
-
-1. Click **"New Database Connection"**
-2. Search **"Hive"** → Select **Apache Hive 2**
-3. Fill in:
-   - Host: `localhost`
-   - Port: `10000`
-   - Database: `default`
 4. Click **Finish** ✅
+
+---
+
+## 📓 Zeppelin Notebooks (Hue Alternative)
+
+Open: **http://localhost:9091**
+
+Zeppelin gives you:
+- 📝 Interactive notebooks (like Jupyter)
+- 🐝 Hive SQL interpreter
+- ⚡ Spark interpreter
+- 📊 Built-in charts and visualizations
+
+### Connect Zeppelin to Hive
+1. Go to **http://localhost:9091**
+2. Click top right menu → **Interpreter**
+3. Search **"jdbc"**
+4. Set:
+   - `default.url` → `jdbc:hive2://hive-server:10000`
+   - `default.driver` → `org.apache.hive.jdbc.HiveDriver`
+5. Click **Save** ✅
+
+### Connect Zeppelin to Spark
+1. Click top right menu → **Interpreter**
+2. Search **"spark"**
+3. Set:
+   - `master` → `spark://spark-master:7077`
+4. Click **Save** ✅
 
 ---
 
 ## 💡 Usage Examples
 
-### Hive SQL
-
+### Hive SQL (in DBeaver or Zeppelin)
 ```sql
--- Create a database
 CREATE DATABASE mydb;
 USE mydb;
 
--- Create a table
 CREATE TABLE employees (
   id     INT,
   name   STRING,
@@ -135,20 +147,15 @@ CREATE TABLE employees (
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ',';
 
--- Insert data
 INSERT INTO employees VALUES (1, 'Alice', 'Engineering', 95000);
 INSERT INTO employees VALUES (2, 'Bob', 'Marketing', 75000);
 
--- Query
 SELECT dept, AVG(salary) as avg_salary
 FROM employees
 GROUP BY dept;
 ```
 
----
-
 ### HDFS Commands
-
 ```bash
 # List files
 docker exec namenode hdfs dfs -ls /
@@ -156,47 +163,28 @@ docker exec namenode hdfs dfs -ls /
 # Create directory
 docker exec namenode hdfs dfs -mkdir /mydata
 
-# Upload a file from your Mac
+# Upload a file
 docker cp localfile.csv namenode:/tmp/
 docker exec namenode hdfs dfs -put /tmp/localfile.csv /mydata/
-
-# Read a file
-docker exec namenode hdfs dfs -cat /mydata/localfile.csv
 ```
 
----
-
 ### HBase Shell
-
 ```bash
 docker exec -it hbase hbase shell
 ```
-
 ```ruby
-# Create a table
 create 'students', 'info', 'grades'
-
-# Insert data
 put 'students', 'student1', 'info:name', 'Alice'
 put 'students', 'student1', 'grades:math', '95'
-
-# Read a row
 get 'students', 'student1'
-
-# Scan all rows
 scan 'students'
 ```
 
----
-
 ### PySpark
-
 ```bash
 docker exec -it spark-master pyspark --master spark://spark-master:7077
 ```
-
 ```python
-# Word count example
 df = spark.read.text("hdfs://namenode:9000/mydata/file.txt")
 from pyspark.sql.functions import explode, split, col
 words = df.select(explode(split(col("value"), " ")).alias("word"))
@@ -207,18 +195,14 @@ words.groupBy("word").count().orderBy("count", ascending=False).show()
 
 ## 🔄 Daily Usage
 
-### Every time you start your Mac:
 ```bash
+# Every time you start your Mac:
 cd ~/bigdata-mac-apple-silicon
-open -a Docker          # Start Docker Desktop
-docker-compose up -d    # Start the stack
-```
+open -a Docker
+docker-compose up -d
 
-### Then open DBeaver and start working! ✅
-
-### When done for the day:
-```bash
-docker-compose down     # Stop stack (keeps all your data)
+# When done:
+docker-compose down
 ```
 
 ---
@@ -253,13 +237,12 @@ HiveServer2 takes 3-5 minutes to fully start. Wait and retry.
 docker logs hive-server 2>&1 | tail -10
 ```
 
-### Services not starting?
+### Zeppelin not loading?
 ```bash
-docker-compose logs -f namenode
-docker-compose logs -f hive-metastore
+docker logs zeppelin 2>&1 | tail -10
 ```
 
-### Complete reset (if everything is broken)
+### Complete reset
 ```bash
 docker-compose down -v
 docker system prune -f
@@ -267,7 +250,7 @@ docker-compose up -d
 ```
 
 ### Architecture warning `linux/amd64` on M4?
-Normal and expected — Docker uses Rosetta 2 for amd64 images.
+Normal — Docker uses Rosetta 2 for amd64 images. They work fine.
 
 ---
 
@@ -279,9 +262,10 @@ Normal and expected — Docker uses Rosetta 2 for amd64 images.
 | 8088  | YARN ResourceManager UI     |
 | 8080  | Spark Master UI             |
 | 8081  | Spark Worker UI             |
+| 9091  | **Zeppelin Notebook UI**    |
+| 8090  | Cloudbeaver Web UI          |
 | 16010 | HBase Master UI             |
 | 10000 | Hive JDBC (DBeaver)         |
-| 8090  | Cloudbeaver Web UI          |
 | 8188  | MapReduce History Server    |
 | 9864  | HDFS DataNode UI            |
 | 8042  | YARN NodeManager UI         |
@@ -290,6 +274,23 @@ Normal and expected — Docker uses Rosetta 2 for amd64 images.
 | 2181  | Zookeeper                   |
 | 7077  | Spark Master RPC            |
 | 9090  | HBase Thrift                |
+
+---
+
+## 📁 Project Structure
+
+```
+bigdata-mac-apple-silicon/
+├── docker-compose.yml          # All services
+├── hadoop.env                  # Hadoop configuration
+├── .github/
+│   └── workflows/
+│       └── validate.yml        # GitHub Actions CI
+├── .gitignore
+├── LICENSE
+├── CONTRIBUTING.md
+└── README.md
+```
 
 ---
 
